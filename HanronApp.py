@@ -31,7 +31,7 @@ if prompt:
 
     with st.spinner("AIが反論を考えています…"):
         completion = client.chat.completions.create(
-            model="meta-llama/Llama-3.1-8B-Instruct",
+            model="tokyotech-llm/Llama-3.1-Swallow-8B-Instruct-v0.3",
             messages=st.session_state["messages"],
             temperature=0.7,
             max_tokens=200,
