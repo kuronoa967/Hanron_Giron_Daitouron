@@ -16,7 +16,6 @@ if "messages" not in st.session_state:
         }
     ]
 
-st.write("下に過去の会話が表示されます：")
 for msg in st.session_state["messages"]:
     if msg["role"] != "system":
         st.chat_message(msg["role"]).write(msg["content"])
