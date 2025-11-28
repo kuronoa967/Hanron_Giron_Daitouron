@@ -1,33 +1,43 @@
 import streamlit as st
 from huggingface_hub import InferenceClient
-import os
 
 HF_TOKEN = st.secrets["HF_TOKEN"]
 client = InferenceClient(api_key=HF_TOKEN)
 
 st.title("AI議論パートナー")
 
-# --- 会話履歴の初期化 ---
+# --- 初期設定 ---
 if "messages" not in st.session_state:
-    st.session_state["messages"] = [
-        {
-            "role": "system",
-            "content": "あなたは論理的で冷静な議論AIです。ユーザーの主張に対して、事実や根拠をもとに短い文章で反論してください。"
-        }
-    ]
+    st.session_state["messages"] = []
 
+if "topic" not in st.session_state:
+    st.session_state["topic"] = None
+
+# --- チャット履歴表示 ---
 for msg in st.session_state["messages"]:
-    if msg["role"] != "system":
-        st.chat_message(msg["role"]).write(msg["content"])
+    st.chat_message(msg["role"]).write(msg["content"])
 
 # --- ユーザー入力 ---
 prompt = st.chat_input("あなたの主張を入力してください…")
 
 if prompt:
-    # ユーザー発言を履歴に追加
+    # 最初の発言を議論テーマとして設定
+    if st.session_state["topic"] is None:
+        st.session_state["topic"] = prompt
+
+        system_prompt = f"""
+        あなたは論理的で冷静な議論AIです。
+        ユーザーの主張に対して、事実や根拠をもとに短い文章で反論してください。
+        議論は次のテーマに限定してください: 「{st.session_state['topic']}」
+        雑談や議論以外の質問には反論せず、丁寧に回答してください。
+        """
+        st.session_state["messages"].append({"role": "system", "content": system_prompt})
+
+    # ユーザー発言を追加
     st.session_state["messages"].append({"role": "user", "content": prompt})
     st.chat_message("user").write(prompt)
 
+    # AIへ送信
     with st.spinner("AIが反論を考えています…"):
         completion = client.chat.completions.create(
             model="meta-llama/Llama-3.1-8B-Instruct",
@@ -37,16 +47,12 @@ if prompt:
         )
         answer = completion.choices[0].message.content
 
-    # AI の反論を履歴に追加
+    # AIの返答表示
     st.session_state["messages"].append({"role": "assistant", "content": answer})
     st.chat_message("assistant").write(answer)
 
-# --- 履歴リセットボタン ---
+# --- 履歴リセット ---
 if st.button("会話をリセット"):
-    st.session_state["messages"] = [
-        {
-            "role": "system",
-            "content": "あなたは論理的で冷静な議論AIです。ユーザーの主張に短文でに反論します。"
-        }
-    ]
+    st.session_state["messages"] = []
+    st.session_state["topic"] = None
     st.success("会話履歴をリセットしました。")
