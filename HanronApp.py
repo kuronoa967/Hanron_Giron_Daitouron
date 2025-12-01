@@ -1,5 +1,13 @@
 import streamlit as st
+from LoginPage import login_page
 from huggingface_hub import InferenceClient
+
+if "user" not in st.session_state:
+    login_page()
+    st.stop()
+
+st.title("AI議論パートナー ログイン済")
+st.write("User UID:", st.session_state["user"]["localId"])
 
 HF_TOKEN = st.secrets["HF_TOKEN"]
 client = InferenceClient(api_key=HF_TOKEN)
