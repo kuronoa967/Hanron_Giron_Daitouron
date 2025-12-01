@@ -14,6 +14,7 @@ if st.session_state["user"] is None:
         "apiKey": st.secrets["firebase"]["apiKey"],
         "authDomain": st.secrets["firebase"]["authDomain"],
         "projectId": st.secrets["firebase"]["projectId"],
+        "databaseURL": st.secrets["firebase"]["databaseURL"],
     }
     firebase = pyrebase.initialize_app(firebaseConfig)
     auth = firebase.auth()
