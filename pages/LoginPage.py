@@ -1,6 +1,11 @@
 import streamlit as st
 import pyrebase
-from FirebaseAuthConfig import firebaseConfig
+
+firebaseConfig = {
+    "apiKey": st.secrets["firebase"]["apiKey"],
+    "authDomain": st.secrets["firebase"]["authDomain"],
+    "projectId": st.secrets["firebase"]["projectId"],
+}
 
 firebase = pyrebase.initialize_app(firebaseConfig)
 auth = firebase.auth()
@@ -8,7 +13,7 @@ auth = firebase.auth()
 def login_page():
     st.title("ログイン / 新規登録")
 
-    choice = st.selectbox("メニューを選択", ["ログイン", "新規登録"])
+    choice = st.sidebar.selectbox("メニューを選択", ["ログイン", "新規登録"])
 
     email = st.text_input("メールアドレス")
     password = st.text_input("パスワード", type="password")
