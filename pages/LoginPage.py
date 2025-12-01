@@ -24,7 +24,7 @@ def login_page():
                 user = auth.sign_in_with_email_and_password(email, password)
                 st.session_state["user"] = user
                 st.success("ログイン成功！")
-                st.rerun()
+                st.switch_page("HanronApp.py")
             except:
                 st.error("ログインに失敗しました")
 
@@ -32,6 +32,9 @@ def login_page():
         if st.button("アカウント作成"):
             try:
                 auth.create_user_with_email_and_password(email, password)
-                st.success("登録成功！ログインしてください")
+                st.success("登録成功！")
+                user = auth.sign_in_with_email_and_password(email, password)
+                st.session_state["user"] = user
+                st.switch_page("HanronApp.py")
             except:
                 st.error("アカウント作成に失敗しました")
