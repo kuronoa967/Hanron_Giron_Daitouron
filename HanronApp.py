@@ -1,9 +1,8 @@
 import streamlit as st
-from LoginPage import login_page
 from huggingface_hub import InferenceClient
 
 if "user" not in st.session_state:
-    login_page()
+    st.switch_page("pages/LoginPage.py")
     st.stop()
 
 st.title("AI議論パートナー ログイン済")
@@ -64,3 +63,7 @@ if st.button("会話をリセット"):
     st.session_state["messages"] = []
     st.session_state["topic"] = None
     st.success("会話履歴をリセットしました。")
+
+if st.sidebar.button("ログアウト"):
+    st.session_state.clear()
+    st.switch_page("pages/LoginPage.py")
