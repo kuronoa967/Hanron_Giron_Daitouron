@@ -2,7 +2,7 @@ import streamlit as st
 from huggingface_hub import InferenceClient
 
 if "user" not in st.session_state:
-    st.switch_page("LoginPage")
+    st.switch_page("pages/LoginPage.py")
     st.stop()
 
 st.title("AI議論パートナー ログイン済")
