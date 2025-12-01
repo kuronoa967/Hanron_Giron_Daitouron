@@ -1,7 +1,7 @@
 import streamlit as st
 from huggingface_hub import InferenceClient
 
-if "user" not in st.session_state:
+if st.button("Home"):
     st.switch_page("pages/LoginPage.py")
     st.stop()
 
