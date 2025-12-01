@@ -5,8 +5,8 @@ if st.button("Home"):
     st.switch_page("pages/LoginPage.py")
     st.stop()
 
-st.title("AI議論パートナー ログイン済")
-st.write("User UID:", st.session_state["user"]["localId"])
+    st.title("AI議論パートナー ログイン済")
+    st.write("User UID:", st.session_state["user"]["localId"])
 
 HF_TOKEN = st.secrets["HF_TOKEN"]
 client = InferenceClient(api_key=HF_TOKEN)
