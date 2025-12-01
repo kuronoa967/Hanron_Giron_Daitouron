@@ -1,3 +1,4 @@
 streamlit
 huggingface-hub
 pyrebase4
+setuptools
