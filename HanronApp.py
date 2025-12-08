@@ -97,8 +97,8 @@ else:
         if st.session_state["topic"] is None:
             st.session_state["topic"] = prompt
             system_prompt = f"""
-            あなたは論理的な議論AIです。
-            テーマ：{st.session_state['topic']}
+            あなたは論理的な議論AIです。ユーザーの主張に対して、事実や根拠をもとに短い文章で反論してください。
+            議論は次のテーマに限定してください：{st.session_state['topic']}
             """
             st.session_state["messages"].append({"role": "system", "content": system_prompt})
 
