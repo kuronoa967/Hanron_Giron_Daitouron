@@ -10,6 +10,7 @@ firebaseConfig = {
     "apiKey": st.secrets["firebase"]["apiKey"],
     "authDomain": st.secrets["firebase"]["authDomain"],
     "projectId": st.secrets["firebase"]["projectId"],
+    "databaseURL": st.secrets["firebase"]["databaseURL"],
     "storageBucket": st.secrets["firebase"]["storageBucket"],
 }
 
