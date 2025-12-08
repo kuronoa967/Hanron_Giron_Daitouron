@@ -2,7 +2,6 @@ import streamlit as st
 import firebase_admin
 from firebase_admin import auth, credentials
 from google.cloud import firestore
-import json
 from huggingface_hub import InferenceClient
 
 # --- Firebase Admin SDK 初期化 ---
