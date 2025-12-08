@@ -87,6 +87,8 @@ if st.session_state["user"] is None:
 
                 uid = user["localId"]
 
+                st.rerun()
+
             except Exception as e:
                 st.error("ログインに失敗しました: " + str(e))
 
