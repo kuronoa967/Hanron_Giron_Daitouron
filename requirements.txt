@@ -1,4 +1,4 @@
 streamlit
 huggingface-hub
-pyrebase4
-setuptools
+firebase-admin
+google-cloud-firestore
