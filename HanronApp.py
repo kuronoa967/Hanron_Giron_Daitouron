@@ -1,10 +1,22 @@
 import streamlit as st
+import pyrebase
 import firebase_admin
-from firebase_admin import auth, credentials
+from firebase_admin import credentials
 from google.cloud import firestore
 from huggingface_hub import InferenceClient
 
-# --- Firebase Admin SDK 初期化 ---
+# --- Pyrebase Auth 用 Firebase Config ---
+firebaseConfig = {
+    "apiKey": st.secrets["firebase"]["apiKey"],
+    "authDomain": st.secrets["firebase"]["authDomain"],
+    "projectId": st.secrets["firebase"]["projectId"],
+    "storageBucket": st.secrets["firebase"]["storageBucket"],
+}
+
+firebase = pyrebase.initialize_app(firebaseConfig)
+auth = firebase.auth()
+
+# --- Firebase Admin SDK (Firestore用) ---
 if not firebase_admin._apps:
     cred = credentials.Certificate({
         "type": st.secrets["firestore"]["type"],
@@ -21,7 +33,9 @@ if not firebase_admin._apps:
     })
     firebase_admin.initialize_app(cred)
 
-db = firestore.Client(project=st.secrets["firestore"]["project_id"])
+if "db" not in st.session_state:
+    st.session_state["db"] = firestore.Client(project=st.secrets["firestore"]["project_id"])
+db = st.session_state["db"]
 
 # --- Session State ---
 if "user" not in st.session_state:
@@ -31,29 +45,49 @@ if "messages" not in st.session_state:
 if "topic" not in st.session_state:
     st.session_state["topic"] = None
 
-# --- Login UI ---
+# --- UI ---
 if st.session_state["user"] is None:
-    st.title("ログイン")
+    choice = st.sidebar.selectbox("メニューを選択", ["ログイン", "新規登録"])
 
-    email = st.text_input("メールアドレス")
-    if st.button("ログイン"):
-        try:
-            user = auth.get_user_by_email(email)
-            st.session_state["user"] = user
+    if choice == "ログイン":
+        st.title("ログイン")
+        email = st.text_input("メールアドレス")
+        password = st.text_input("パスワード", type="password")
 
-            # Firestoreからログ履歴を取得
-            doc = db.collection("conversations").document(user.uid).get()
-            if doc.exists:
-                st.session_state["messages"] = doc.to_dict().get("messages", [])
-                st.session_state["topic"] = doc.to_dict().get("topic", None)
+        if st.button("ログイン"):
+            try:
+                user = auth.sign_in_with_email_and_password(email, password)
+                st.session_state["user"] = user
+                st.success("ログイン成功！")
 
-            st.success("ログイン成功！")
-        except Exception as e:
-            st.error("ログイン失敗: " + str(e))
+                # Firestoreからログ取得
+                uid = user["localId"]
+                doc = db.collection("conversations").document(uid).get()
+                if doc.exists:
+                    st.session_state["messages"] = doc.to_dict().get("messages", [])
+                    st.session_state["topic"] = doc.to_dict().get("topic", None)
+
+            except Exception as e:
+                st.error("ログインに失敗しました: " + str(e))
+
+    else:
+        st.title("新規登録")
+        email = st.text_input("メールアドレス")
+        password = st.text_input("パスワード", type="password")
+
+        if st.button("アカウント作成"):
+            try:
+                auth.create_user_with_email_and_password(email, password)
+                st.success("登録成功！")
+
+                user = auth.sign_in_with_email_and_password(email, password)
+                st.session_state["user"] = user
+            except:
+                st.error("アカウント作成に失敗しました")
 
 else:
     st.title("AI議論パートナー")
-    st.write("User UID:", st.session_state["user"].uid)
+    st.write("User UID:", st.session_state["user"]["localId"])
 
     HF_TOKEN = st.secrets["HF_TOKEN"]
     client = InferenceClient(api_key=HF_TOKEN)
@@ -64,7 +98,6 @@ else:
     prompt = st.chat_input("主張を入力してください…")
 
     if prompt:
-        # 初回テーマ設定
         if st.session_state["topic"] is None:
             st.session_state["topic"] = prompt
             system_prompt = f"""
@@ -89,7 +122,8 @@ else:
         st.chat_message("assistant").write(answer)
 
         # Firestore 保存
-        db.collection("conversations").document(st.session_state["user"].uid).set({
+        uid = st.session_state["user"]["localId"]
+        db.collection("conversations").document(uid).set({
             "messages": st.session_state["messages"],
             "topic": st.session_state["topic"],
         })
@@ -98,7 +132,8 @@ else:
         st.session_state.clear()
 
     if st.sidebar.button("会話リセット"):
+        uid = st.session_state["user"]["localId"]
         st.session_state["messages"] = []
         st.session_state["topic"] = None
-        db.collection("conversations").document(st.session_state["user"].uid).set({})
+        db.collection("conversations").document(uid).set({})
         st.success("リセットしました。")
