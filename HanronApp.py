@@ -119,9 +119,9 @@ else:
 
         # Firestore 保存
         uid = st.session_state["user"]["localId"]
-        db.collection("conversations").document(uid).set({
-            "messages": st.session_state["messages"],
-            "topic": st.session_state["topic"],
+        db.collection("conversations").document(uid).collection("messages").add({
+            "role": "assistant",
+            "content": answer,
         })
 
     if st.sidebar.button("ログアウト"):
