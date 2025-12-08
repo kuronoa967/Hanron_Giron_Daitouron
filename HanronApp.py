@@ -62,8 +62,10 @@ if st.session_state["user"] is None:
                 st.success("ログイン成功！")
 
                 # Firestoreからログ取得
+                st.write("Firestore read start")  # ★ debug
                 uid = user["localId"]
                 doc = db.collection("conversations").document(uid).get()
+                st.write("Firestore read end")  # ★ debug
                 if doc.exists:
                     st.session_state["messages"] = doc.to_dict().get("messages", [])
                     st.session_state["topic"] = doc.to_dict().get("topic", None)
