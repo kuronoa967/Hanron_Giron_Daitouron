@@ -35,8 +35,13 @@ if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
 
 if "db" not in st.session_state:
-    st.session_state["db"] = firestore.Client(project=st.secrets["firestore"]["project_id"])
-db = st.session_state["db"]
+    # firebase_adminで初期化されたアプリからCredentialを取得
+    app = firebase_admin.get_app()
+    # firestore.Clientにprojectとcredentialを明示的に渡す
+    st.session_state["db"] = firestore.Client(
+        project=st.secrets["firestore"]["project_id"],
+        credentials=app.credential.get_credential()
+    )
 
 
 # ★★★ 修正・追加箇所 1: コレクション削除関数を定義 ★★★
