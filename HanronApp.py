@@ -33,7 +33,7 @@ if "topic" not in st.session_state:
 
 # --- Login UI ---
 if st.session_state["user"] is None:
-    st.title("ログイン（Admin SDK）")
+    st.title("ログイン")
 
     email = st.text_input("メールアドレス")
     if st.button("ログイン"):
