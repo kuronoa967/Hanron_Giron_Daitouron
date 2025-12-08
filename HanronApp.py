@@ -38,6 +38,25 @@ if "db" not in st.session_state:
     st.session_state["db"] = firestore.Client(project=st.secrets["firestore"]["project_id"])
 db = st.session_state["db"]
 
+
+# ★★★ 修正・追加箇所 1: コレクション削除関数を定義 ★★★
+def delete_collection(coll_ref, batch_size=50):
+    """
+    指定されたコレクションのドキュメントをバッチで削除します。
+    """
+    docs = coll_ref.limit(batch_size).stream()
+    deleted = 0
+    
+    for doc in docs:
+        doc.reference.delete()
+        deleted += 1
+    
+    # バッチサイズ分削除できた場合、まだ残っている可能性があるため再帰的に呼び出す
+    if deleted >= batch_size:
+        delete_collection(coll_ref, batch_size)
+# ★★★ 修正・追加箇所 1 終了 ★★★
+
+
 # --- Session State ---
 if "user" not in st.session_state:
     st.session_state["user"] = None
@@ -127,9 +146,18 @@ else:
     if st.sidebar.button("ログアウト"):
         st.session_state.clear()
 
+    # ★★★ 修正・追加箇所 2: 会話リセット処理の修正 ★★★
     if st.sidebar.button("会話リセット"):
         uid = st.session_state["user"]["localId"]
+        
+        # 1. サブコレクションのドキュメントを全て削除
+        messages_collection_ref = db.collection("conversations").document(uid).collection("messages")
+        delete_collection(messages_collection_ref)
+        
+        # 2. 親ドキュメントを削除
+        db.collection("conversations").document(uid).delete()
+        
         st.session_state["messages"] = []
         st.session_state["topic"] = None
-        db.collection("conversations").document(uid).set({})
         st.success("リセットしました。")
+    # ★★★ 修正・追加箇所 2 終了 ★★★
