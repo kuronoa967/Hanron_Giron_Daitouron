@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pyrebase
 import firebase_admin
