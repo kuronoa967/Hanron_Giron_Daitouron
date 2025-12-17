@@ -1,9 +1,8 @@
+
 import streamlit as st
 import pyrebase
 import firebase_admin
 from firebase_admin import credentials
-# 変更点：google.auth をインポート
-from google.oauth2.service_account import Credentials
 from google.cloud import firestore
 from huggingface_hub import InferenceClient
 
@@ -21,12 +20,11 @@ auth = firebase.auth()
 
 # --- Firebase Admin SDK (Firestore用) ---
 if not firebase_admin._apps:
-    # サービスアカウント情報をディクショナリとして準備
-    service_account_info = {
+    cred = credentials.Certificate({
         "type": st.secrets["firestore"]["type"],
         "project_id": st.secrets["firestore"]["project_id"],
         "private_key_id": st.secrets["firestore"]["private_key_id"],
-        "private_key": st.secrets["firestore"]["private_key"].replace('\\n', '\n'), # 改行コードの修正
+        "private_key": st.secrets["firestore"]["private_key"],
         "client_email": st.secrets["firestore"]["client_email"],
         "client_id": st.secrets["firestore"]["client_id"],
         "auth_uri": st.secrets["firestore"]["auth_uri"],
@@ -34,24 +32,17 @@ if not firebase_admin._apps:
         "auth_provider_x509_cert_url": st.secrets["firestore"]["auth_provider_x509_cert_url"],
         "client_x509_cert_url": st.secrets["firestore"]["client_x509_cert_url"],
         "universe_domain": st.secrets["firestore"]["universe_domain"],
-    }
-    
-    cred = credentials.Certificate(service_account_info)
+    })
     firebase_admin.initialize_app(cred)
 
 if "db" not in st.session_state:
-    # ★★★ 修正箇所：google-cloud-firestore 用の Credentials を直接生成 ★★★
-    
-    # 1. サービスアカウント情報から google.oauth2.service_account.Credentials を生成
-    # 注: service_account_info は上記の firebase_admin 初期化時に使用したものと同じ
-    firestore_creds = Credentials.from_service_account_info(service_account_info)
-    
-    # 2. firestore.Client に Credentials オブジェクトを明示的に渡す
+    # firebase_adminで初期化されたアプリからCredentialを取得
+    app = firebase_admin.get_app()
+    # firestore.Clientにprojectとcredentialを明示的に渡す
     st.session_state["db"] = firestore.Client(
         project=st.secrets["firestore"]["project_id"],
-        credentials=firestore_creds
+        credentials=app.credential.get_credential()
     )
-    # ★★★ 修正箇所 終了 ★★★
 
 
 # ★★★ 修正・追加箇所 1: コレクション削除関数を定義 ★★★
