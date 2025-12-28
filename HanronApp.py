@@ -1,170 +1,54 @@
+
 import streamlit as st
-import pyrebase
-import firebase_admin
-from firebase_admin import credentials
-from google.cloud import firestore
 from huggingface_hub import InferenceClient
+import os
 
-# --- Pyrebase Auth 用 Firebase Config ---
-firebaseConfig = {
-    "apiKey": st.secrets["firebase"]["apiKey"],
-    "authDomain": st.secrets["firebase"]["authDomain"],
-    "projectId": st.secrets["firebase"]["projectId"],
-    "databaseURL": st.secrets["firebase"]["databaseURL"],
-    "storageBucket": st.secrets["firebase"]["storageBucket"],
-}
+HF_TOKEN = st.secrets["HF_TOKEN"]
+client = InferenceClient(api_key=HF_TOKEN)
 
-firebase = pyrebase.initialize_app(firebaseConfig)
-auth = firebase.auth()
+st.title("AI議論パートナー")
 
-# --- Firebase Admin SDK (Firestore用) ---
-if not firebase_admin._apps:
-    cred = credentials.Certificate({
-        "type": st.secrets["firestore"]["type"],
-        "project_id": st.secrets["firestore"]["project_id"],
-        "private_key_id": st.secrets["firestore"]["private_key_id"],
-        "private_key": st.secrets["firestore"]["private_key"],
-        "client_email": st.secrets["firestore"]["client_email"],
-        "client_id": st.secrets["firestore"]["client_id"],
-        "auth_uri": st.secrets["firestore"]["auth_uri"],
-        "token_uri": st.secrets["firestore"]["token_uri"],
-        "auth_provider_x509_cert_url": st.secrets["firestore"]["auth_provider_x509_cert_url"],
-        "client_x509_cert_url": st.secrets["firestore"]["client_x509_cert_url"],
-        "universe_domain": st.secrets["firestore"]["universe_domain"],
-    })
-    firebase_admin.initialize_app(cred)
-
-if "db" not in st.session_state:
-    # firebase_adminで初期化されたアプリからCredentialを取得
-    app = firebase_admin.get_app()
-    # firestore.Clientにprojectとcredentialを明示的に渡す
-    st.session_state["db"] = firestore.Client(
-        project=st.secrets["firestore"]["project_id"],
-        credentials=app.credential.get_credential()
-    )
-
-
-# ★★★ 修正・追加箇所 1: コレクション削除関数を定義 ★★★
-def delete_collection(coll_ref, batch_size=50):
-    """
-    指定されたコレクションのドキュメントをバッチで削除します。
-    """
-    docs = coll_ref.limit(batch_size).stream()
-    deleted = 0
-    
-    for doc in docs:
-        doc.reference.delete()
-        deleted += 1
-    
-    # バッチサイズ分削除できた場合、まだ残っている可能性があるため再帰的に呼び出す
-    if deleted >= batch_size:
-        delete_collection(coll_ref, batch_size)
-# ★★★ 修正・追加箇所 1 終了 ★★★
-
-
-# --- Session State ---
-if "user" not in st.session_state:
-    st.session_state["user"] = None
+# --- 会話履歴の初期化 ---
 if "messages" not in st.session_state:
-    st.session_state["messages"] = []
-if "topic" not in st.session_state:
-    st.session_state["topic"] = None
+    st.session_state["messages"] = [
+        {
+            "role": "system",
+            "content": "あなたは論理的で冷静な議論AIです。ユーザーの主張に対して、事実や根拠をもとに短い文章で反論してください。"
+        }
+    ]
 
-# --- UI ---
-if st.session_state["user"] is None:
-    choice = st.sidebar.selectbox("メニューを選択", ["ログイン", "新規登録"])
-
-    if choice == "ログイン":
-        st.title("ログイン")
-        email = st.text_input("メールアドレス")
-        password = st.text_input("パスワード", type="password")
-
-        if st.button("ログイン"):
-            try:
-                user = auth.sign_in_with_email_and_password(email, password)
-                st.session_state["user"] = user
-                st.success("ログイン成功！")
-
-                uid = user["localId"]
-
-                st.rerun()
-
-            except Exception as e:
-                st.error("ログインに失敗しました: " + str(e))
-
-    else:
-        st.title("新規登録")
-        email = st.text_input("メールアドレス")
-        password = st.text_input("パスワード", type="password")
-
-        if st.button("アカウント作成"):
-            try:
-                auth.create_user_with_email_and_password(email, password)
-                st.success("登録成功！")
-
-                user = auth.sign_in_with_email_and_password(email, password)
-                st.session_state["user"] = user
-            except:
-                st.error("アカウント作成に失敗しました")
-
-else:
-    st.title("AI議論パートナー")
-    st.write("User UID:", st.session_state["user"]["localId"])
-
-    HF_TOKEN = st.secrets["HF_TOKEN"]
-    client = InferenceClient(api_key=HF_TOKEN)
-
-    for msg in st.session_state["messages"]:
+st.write("下に過去の会話が表示されます：")
+for msg in st.session_state["messages"]:
+    if msg["role"] != "system":
         st.chat_message(msg["role"]).write(msg["content"])
 
-    prompt = st.chat_input("主張を入力してください…")
+# --- ユーザー入力 ---
+prompt = st.chat_input("あなたの主張を入力してください…")
 
-    if prompt:
-        if st.session_state["topic"] is None:
-            st.session_state["topic"] = prompt
-            system_prompt = f"""
-            あなたは論理的な議論AIです。ユーザーの主張に対して、事実や根拠をもとに短い文章で反論してください。
-            議論は次のテーマに限定してください：{st.session_state['topic']}
-            """
-            st.session_state["messages"].append({"role": "system", "content": system_prompt})
+if prompt:
+    # ユーザー発言を履歴に追加
+    st.session_state["messages"].append({"role": "user", "content": prompt})
+    st.chat_message("user").write(prompt)
 
-        st.session_state["messages"].append({"role": "user", "content": prompt})
-        st.chat_message("user").write(prompt)
+    with st.spinner("AIが反論を考えています…"):
+        completion = client.chat.completions.create(
+            model="meta-llama/Llama-3.1-8B-Instruct",
+            messages=st.session_state["messages"],
+            temperature=0.7,
+            max_tokens=200,
+        )
+        answer = completion.choices[0].message.content
 
-        with st.spinner("反論を生成中..."):
-            completion = client.chat.completions.create(
-                model="meta-llama/Llama-3.1-8B-Instruct",
-                messages=st.session_state["messages"],
-                max_tokens=200,
-                temperature=0.7,
-            )
-            answer = completion.choices[0].message.content
+    # AI の反論を履歴に追加
+    st.session_state["messages"].append({"role": "assistant", "content": answer})
+    st.chat_message("assistant").write(answer)
 
-        st.session_state["messages"].append({"role": "assistant", "content": answer})
-        st.chat_message("assistant").write(answer)
-
-        # Firestore 保存
-        uid = st.session_state["user"]["localId"]
-        db.collection("conversations").document(uid).collection("messages").add({
-            "role": "assistant",
-            "content": answer,
-        })
-
-    if st.sidebar.button("ログアウト"):
-        st.session_state.clear()
-
-    # ★★★ 修正・追加箇所 2: 会話リセット処理の修正 ★★★
-    if st.sidebar.button("会話リセット"):
-        uid = st.session_state["user"]["localId"]
-        
-        # 1. サブコレクションのドキュメントを全て削除
-        messages_collection_ref = db.collection("conversations").document(uid).collection("messages")
-        delete_collection(messages_collection_ref)
-        
-        # 2. 親ドキュメントを削除
-        db.collection("conversations").document(uid).delete()
-        
-        st.session_state["messages"] = []
-        st.session_state["topic"] = None
-        st.success("リセットしました。")
-    # ★★★ 修正・追加箇所 2 終了 ★★★
+# --- 履歴リセットボタン ---
+if st.button("会話をリセット"):
+    st.session_state["messages"] = [
+        {
+            "role": "system",
+            "content": "あなたは論理的で冷静な議論AIです。ユーザーの主張に短文でに反論します。"
+        }
+    ]
+    st.success("会話履歴をリセットしました。")
