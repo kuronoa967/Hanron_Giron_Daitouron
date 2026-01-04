@@ -1,6 +1,5 @@
 streamlit
-huggingface-hub
 firebase-admin
-google-cloud-firestore
-pyrebase4
-requests_toolbelt
+requests
+streamlit-option-menu
+huggingface-hub
