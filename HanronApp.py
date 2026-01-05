@@ -275,14 +275,14 @@ def show_chat_page():
     prompt = st.chat_input("意見を入力してください…")
 
     if prompt:
-        if st.session_state.user and st.session_state.new_chat:
+        if st.session_state.user and st.session_state.current_chat_id is None:
             uid = st.session_state.user["uid"]
             new_chat_id = create_chat(uid, title=prompt, topic=prompt)
             st.session_state.current_chat_id = new_chat_id
             st.session_state.new_chat = False
             st.session_state.topic = prompt
-            save_message(uid, new_chat_id, "user", prompt)
             
+            save_message(uid, new_chat_id, "user", prompt)
             generate_AI_message(prompt, uid=uid, chat_id=new_chat_id)
             
             st.session_state.chats = load_chats(uid)
@@ -291,8 +291,8 @@ def show_chat_page():
         elif st.session_state.user:
             uid = st.session_state.user["uid"]
             chat_id = st.session_state.current_chat_id
-            save_message(uid, chat_id, role="user", content=prompt)
             
+            save_message(uid, chat_id, role="user", content=prompt)
             generate_AI_message(prompt, uid=uid, chat_id=chat_id)
             
             st.rerun()
