@@ -122,16 +122,33 @@ def load_messages(uid, chat_id):
 
     return messages
 
-def built_AI_message(uid, chat_id, prompt):
+def generate_AI_message(prompt, uid=None, chat_id=None):
     messages = []
     system_prompt = f"あなたは論理的な議論AIです。ユーザーの主張に対して、事実や根拠をもとに短い文章で反論してください。議論は次のテーマに限定してください：{st.session_state['topic']}"
     messages.append({"role": "system", "content": system_prompt})
-    past_messages = load_messages(uid, chat_id)
-    for m in past_messages:
-        if m["role"] in ["user", "assistant"]:
-            messages.append(m)
+    if uid is not None and chat_id is not None:
+        past_messages = load_messages(uid, chat_id)
+        for m in past_messages:
+            if m["role"] == "user" or m["role"] == "assistant":
+                messages.append(m)
+    else:
+        for m in st.session_state.messages:
+            if m["role"] == "user" or m["role"] == "assistant":
+                messages.append(m)
     messages.append({"role": "user", "content": prompt})
-    return messages
+    with st.spinner("反論を生成中..."):
+        completion = client.chat.completions.create(
+            model="meta-llama/Llama-3.1-8B-Instruct",
+            messages=messages,
+            max_tokens=200,
+            temperature=0.7,
+        )
+    answer = completion.choices[0].message.content
+    if uid is not None and chat_id is not None:
+        save_message(uid, chat_id, "assistant", answer)
+    else:
+        st.session_state.messages.append({"role": "assistant", "content": answer})
+    return answer
 
 def show_account_page():
     # -------------------------
@@ -266,16 +283,7 @@ def show_chat_page():
             st.session_state.topic = prompt
             save_message(uid, new_chat_id, "user", prompt)
             
-            ai_message = built_AI_message(uid, new_chat_id, prompt)
-            with st.spinner("反論を生成中..."):
-                completion = client.chat.completions.create(
-                    model = "meta-llama/Llama-3.1-8B-Instruct",
-                    messages = ai_message,
-                    max_tokens = 200,
-                    temperature = 0.7,
-                )
-            answer = completion.choices[0].message.content
-            save_message(uid, new_chat_id, "assistant", answer)
+            generate_AI_message(prompt, uid=uid, chat_id=new_chat_id)
             
             st.session_state.chats = load_chats(uid)
             st.session_state.force_select_index = len(st.session_state.chats) - 1
@@ -285,50 +293,38 @@ def show_chat_page():
             chat_id = st.session_state.current_chat_id
             save_message(uid, chat_id, role="user", content=prompt)
             
-            ai_message = built_AI_message(uid, chat_id, prompt)
-            with st.spinner("反論を生成中..."):
-                completion = client.chat.completions.create(
-                    model = "meta-llama/Llama-3.1-8B-Instruct",
-                    messages = ai_message,
-                    max_tokens = 200,
-                    temperature = 0.7,
-                )
-            answer = completion.choices[0].message.content
-            save_message(uid, chat_id, "assistant", answer)
+            generate_AI_message(prompt, uid=uid, chat_id=chat_id)
             
             st.rerun()
         else :
             if st.session_state.topic is None:
                 st.session_state.topic = prompt
-                system_prompt = f"あなたは論理的な議論AIです。ユーザーの主張に対して、事実や根拠をもとに短い文章で反論してください。議論は次のテーマに限定してください：{st.session_state['topic']}"
-                st.session_state.messages.append({"role": "system", "content": system_prompt})
 
             st.chat_message("user").write(prompt)
-            st.session_state["messages"].append({"role": "user", "content": prompt})
-            with st.spinner("反論を生成中..."):
-                completion = client.chat.completions.create(
-                    model = "meta-llama/Llama-3.1-8B-Instruct",
-                    messages = st.session_state.messages,
-                    max_tokens = 200,
-                    temperature = 0.7,
-                )
-            answer = completion.choices[0].message.content
-            st.session_state.messages.append({"role" : "assistant", "content": answer})
+            st.session_state.messages.append({"role": "user", "content": prompt})
+
+            generate_AI_message(prompt)
+            
             st.rerun()
             
 def on_change(key):
     selected_title = st.session_state[key]
 
-    chat_id_map = {c["title"]: c["id"] for c in st.session_state.chats}
-    selected_chat_id = chat_id_map[selected_title]
+    selected_chat = None
+    for chat in st.session_state.chats:
+        if chat["title"] == selected_title:
+            selected_chat = chat
+            break
 
-    st.session_state.current_chat_id = selected_chat_id
-    st.session_state.topic = selected_chat.get("topic")
+    if selected_chat is None:
+        return
+
+    st.session_state.current_chat_id = selected_chat["id"]
+    st.session_state.topic = selected_chat["topic"]
     st.session_state.new_chat = False
     st.session_state.page = "chat"
 
 with st.sidebar:
-    # ① 一番上：新規チャット
     if st.button("新規チャット", use_container_width=True):
         st.session_state.current_chat_id = None
         st.session_state.messages = []
@@ -356,8 +352,10 @@ with st.sidebar:
             unsafe_allow_html=True
         )
     else:
-        chat_titles = [c["title"] for c in st.session_state.chats]
-        chat_id_map = {c["title"]: c["id"] for c in st.session_state.chats}
+        chat_titles = []
+        for chat in st.session_state.chats:
+            chat_titles.append(chat["title"])
+            
 
         manual_select = None
         if st.session_state.force_select_index is not None and st.session_state.force_select_index < len(chat_titles):
