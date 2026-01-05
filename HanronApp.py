@@ -333,7 +333,7 @@ with st.sidebar:
         st.session_state.new_chat = True
         st.session_state.topic = None
         st.rerun()
-
+    
     # ② 真ん中：チャット一覧
     if st.session_state.user is None:
         # 未ログイン時
