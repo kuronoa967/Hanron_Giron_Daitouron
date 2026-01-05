@@ -50,6 +50,9 @@ if "new_chat" not in st.session_state:
 if "current_chat_id" not in st.session_state:
     st.session_state.current_chat_id = None
 
+if "last_chat_id" not in st.session_state:
+    st.session_state.last_chat_id = None
+
 if "force_select_index" not in st.session_state:
     st.session_state.force_select_index = None
 
@@ -319,7 +322,11 @@ def on_change(key):
     if selected_chat is None:
         return
 
+    if st.session_state.last_chat_id == selected_chat["id"]:
+        return
+        
     st.session_state.current_chat_id = selected_chat["id"]
+    st.session_state.last_chat_id = selected_chat["id"]
     st.session_state.topic = selected_chat["topic"]
     st.session_state.new_chat = False
     st.session_state.page = "chat"
