@@ -255,7 +255,7 @@ def show_chat_page():
                 continue
             st.chat_message(msg["role"]).write(msg["content"])
                 
-    prompt = st.chat_input("議題を入力してください…")
+    prompt = st.chat_input("意見を入力してください…")
 
     if prompt:
         if st.session_state.user and st.session_state.new_chat:
