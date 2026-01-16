@@ -1,9 +1,11 @@
 import streamlit as st
-from streamlit_option_menu import option_menu
+# from streamlit_option_menu import option_menu
 import requests
 import firebase_admin
 from firebase_admin import credentials, firestore
 from huggingface_hub import InferenceClient
+from st_aggrid import AgGrid, GridOptionsBuilder
+import pandas as pd
 
 st.markdown(
     """
@@ -383,29 +385,38 @@ with st.sidebar:
                 unsafe_allow_html=True
             )
         else:
-            selected_chat = option_menu(
-                menu_title=None,
-                options=chat_titles,
-                icons=[None] * len(chat_titles),
-                on_change=on_change,
-                key='chat_history',
-                manual_select=manual_select,
-                styles={
-                    "container": {
-                        "max-height": "400px",
-                        "height": "400px",
-                        "overflow-y": "auto",
-                    },
-                    "icon": {
-                        "display": "none",
-                        "margin-right": "0",
-                        "width": "0",
-                    },
-                    "nav": {
-                        "font-size": "14px",
-                    },
-                },
-            )
+            if chat_titles:
+                # ------- DataFrame に変換 -------
+                df = pd.DataFrame(st.session_state.chats)
+            
+                gb = GridOptionsBuilder.from_dataframe(df)
+                gb.configure_selection('single', use_checkbox=False)
+                gb.configure_column("id", header_name="ID", hide=True)
+                gb.configure_column("title", header_name="タイトル", width=200)
+                grid_options = gb.build()
+            
+                grid_response = AgGrid(
+                    df,
+                    gridOptions=grid_options,
+                    height=400,
+                    fit_columns_on_grid_load=True
+                )
+            
+                # ------- 選択されたらチャットIDを取得 -------
+                selected = grid_response["selected_rows"]
+                if selected:
+                    chat_id = selected[0]["id"]
+            
+                    if st.session_state.current_chat_id != chat_id:
+                        st.session_state.current_chat_id = chat_id
+                        st.session_state.topic = selected[0]["topic"]
+                        st.session_state.new_chat = False
+                        st.session_state.page = "chat"
+                        st.rerun()
+            
+            else:
+                st.write("まだチャットはありません")
+
 
         if st.session_state.force_select_index is not None:
             st.session_state.force_select_index = None
