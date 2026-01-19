@@ -406,10 +406,9 @@ with st.sidebar:
             
                 # ------- 選択されたらチャットIDを取得 -------
                 selected = grid_response["selected_rows"]
-                st.write("selectedの中身", selected)
                 if selected is not None and len(selected) > 0:
-                    st.write("selectedの中身", selected[0])
-                    chat_id = selected[0]["id"]
+                    row = selected.iloc[0]
+                    chat_id = row["id"]
             
                     if st.session_state.current_chat_id != chat_id:
                         st.session_state.current_chat_id = chat_id
