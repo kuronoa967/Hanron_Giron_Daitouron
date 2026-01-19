@@ -393,7 +393,7 @@ with st.sidebar:
                     
                 gb = GridOptionsBuilder.from_dataframe(df)
                 gb.configure_selection('single', use_checkbox=False)
-                gb.configure_column("id", header_name="ID", hide=True)
+                gb.configure_column("id", header_name="ID", width=1)
                 gb.configure_column("title", header_name="タイトル", width=200)
                 grid_options = gb.build()
             
