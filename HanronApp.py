@@ -367,6 +367,7 @@ with st.sidebar:
             if chat_titles:
                 # ------- DataFrame に変換 -------
                 df = pd.DataFrame(st.session_state.chats)
+                df = df.sort_values("created_at", ascending=False)
                 gb = GridOptionsBuilder.from_dataframe(df)
                 gb.configure_selection('single', use_checkbox=False)
                 gb.configure_column("id", header_name="ID", hide=True)
