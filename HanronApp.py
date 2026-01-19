@@ -388,7 +388,9 @@ with st.sidebar:
             if chat_titles:
                 # ------- DataFrame に変換 -------
                 df = pd.DataFrame(st.session_state.chats)
-            
+                if "topic" in df.columns:
+                    df = df.drop(columns=["topic"])
+                    
                 gb = GridOptionsBuilder.from_dataframe(df)
                 gb.configure_selection('single', use_checkbox=False)
                 gb.configure_column("id", header_name="ID", hide=True)
@@ -404,12 +406,20 @@ with st.sidebar:
             
                 # ------- 選択されたらチャットIDを取得 -------
                 selected = grid_response["selected_rows"]
-                if selected:
+                if selected is not None and len(selected) > 0:
                     chat_id = selected[0]["id"]
             
                     if st.session_state.current_chat_id != chat_id:
                         st.session_state.current_chat_id = chat_id
-                        st.session_state.topic = selected[0]["topic"]
+                        
+                        selected_chat = None
+                        for c in st.session_state.chats:
+                            if c["id"] == chat_id:
+                                selected_chat = c
+                                break
+                        if selected_chat is not None:
+                            st.session_state.topic = selected_chat["topic"]
+                        
                         st.session_state.new_chat = False
                         st.session_state.page = "chat"
                         st.rerun()
