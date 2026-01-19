@@ -71,7 +71,8 @@ def load_chats(uid):
         chats.append({
             "id": doc.id,
             "title": data.get("title", "無題"),
-            "topic": data.get("topic")
+            "topic": data.get("topic"),
+            "createdAt": data.get("createdAt")
         })
     return chats
     
