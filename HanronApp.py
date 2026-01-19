@@ -374,6 +374,7 @@ with st.sidebar:
                 gb.configure_column("id", header_name="ID", hide=True)
                 gb.configure_column("title", header_name="タイトル", width=200)
                 gb.configure_column("topic", header_name="トピック", hide=True)
+                gb.configure_column("createdAt", header_name="投稿日", hide=True)
                 grid_options = gb.build()
             
                 grid_response = AgGrid(
