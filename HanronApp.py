@@ -337,6 +337,7 @@ with st.sidebar:
         st.session_state.messages = []
         st.session_state.new_chat = True
         st.session_state.topic = None
+        st.session_state.chat_nav = None
         st.rerun()
     
     # ② 真ん中：チャット一覧
@@ -357,7 +358,7 @@ with st.sidebar:
             unsafe_allow_html=True
         )
     else:
-        if len(st.session_state.chats) == 0:
+        if len(st.session_state.chats) =< 0:
             st.markdown(
                 """
                 <div style="
