@@ -407,6 +407,7 @@ with st.sidebar:
                 # ------- 選択されたらチャットIDを取得 -------
                 selected = grid_response["selected_rows"]
                 if selected is not None and len(selected) > 0:
+                    st.write("selectedの中身", selected)
                     chat_id = selected[0]["id"]
             
                     if st.session_state.current_chat_id != chat_id:
