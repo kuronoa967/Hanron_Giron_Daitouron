@@ -102,7 +102,7 @@ def save_message(uid, chat_id, role, content):
     messages_ref.add({
         "role": role,
         "content": content,
-        "createdAt": firestore.SERVER_TIMESTAMP
+        "At": firestore.SERVER_TIMESTAMP
     })
 
 def load_messages(uid, chat_id):
@@ -112,7 +112,7 @@ def load_messages(uid, chat_id):
         .collection("chats")
         .document(chat_id)
         .collection("messages")
-        .order_by("createdAt")
+        .order_by("At")
     )
 
     docs = messages_ref.stream()
@@ -367,7 +367,7 @@ with st.sidebar:
             if chat_titles:
                 # ------- DataFrame に変換 -------
                 df = pd.DataFrame(st.session_state.chats)
-                df = df.sort_values("created_at", ascending=False)
+                df = df.sort_values("createdAt", ascending=False)
                 gb = GridOptionsBuilder.from_dataframe(df)
                 gb.configure_selection('single', use_checkbox=False)
                 gb.configure_column("id", header_name="ID", hide=True)
