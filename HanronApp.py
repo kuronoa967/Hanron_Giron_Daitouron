@@ -376,7 +376,7 @@ with st.sidebar:
             chat_ids = [c["id"] for c in st.session_state.chats]
             chat_labels = {c["id"]: c["title"] for c in st.session_state.chats}
 
-            selected_chat_id = Navbar(
+            selected_chat_id = st.navigation(
                 pages=chat_ids,
                 options=chat_labels,
                 key="chat_nav",
