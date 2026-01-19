@@ -311,27 +311,6 @@ def show_chat_page():
             generate_AI_message(prompt)
             
             st.rerun()
-            
-def on_change(key):
-    selected_title = st.session_state[key]
-
-    selected_chat = None
-    for chat in st.session_state.chats:
-        if chat["title"] == selected_title:
-            selected_chat = chat
-            break
-
-    if selected_chat is None:
-        return
-
-    if st.session_state.last_chat_id == selected_chat["id"]:
-        return
-        
-    st.session_state.current_chat_id = selected_chat["id"]
-    st.session_state.last_chat_id = selected_chat["id"]
-    st.session_state.topic = selected_chat["topic"]
-    st.session_state.new_chat = False
-    st.session_state.page = "chat"
 
 with st.sidebar:
     if st.button("新規チャット", use_container_width=True):
@@ -412,15 +391,7 @@ with st.sidebar:
             
                     if st.session_state.current_chat_id != chat_id:
                         st.session_state.current_chat_id = chat_id
-                        
-                        selected_chat = None
-                        for c in st.session_state.chats:
-                            if c["id"] == chat_id:
-                                selected_chat = c
-                                break
-                        if selected_chat is not None:
-                            st.session_state.topic = selected_chat["topic"]
-                        
+                        st.session_state.topic = row["topic"]
                         st.session_state.new_chat = False
                         st.session_state.page = "chat"
                         st.rerun()
