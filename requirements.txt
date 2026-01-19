@@ -1,5 +1,6 @@
 streamlit
 firebase-admin
 requests
+streamlit-option-menu
 huggingface-hub
-from st_navbar import Navbar
+streamlit-aggrid
