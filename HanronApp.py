@@ -1,5 +1,4 @@
 import streamlit as st
-from streamlit_option_menu import option_menu
 import requests
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -374,21 +373,22 @@ with st.sidebar:
                 unsafe_allow_html=True
             )
         else:
-            chat_titles = [c["title"] for c in st.session_state.chats]
+            chat_ids = [c["id"] for c in st.session_state.chats]
+            chat_labels = {c["id"]: c["title"] for c in st.session_state.chats}
 
-            selected_title = Navbar(
-                pages=chat_titles,
-                options={t: t for t in chat_titles},  # タイトルがキーになる
+            selected_chat_id = Navbar(
+                pages=chat_ids,
+                options=chat_labels,
                 key="chat_nav",
                 style={"overflow-y": "auto", "height": "400px"}
             )
 
-            # --- 選択されたチャットのIDをセット ---
-            for c in st.session_state.chats:
-                if c["title"] == selected_title:
-                    st.session_state.current_chat_id = c["id"]
-                    st.session_state.topic = c["topic"]
-                    break
+            if selected_chat_id:
+                for c in st.session_state.chats:
+                    if c["id"] == selected_chat_id:
+                        st.session_state.current_chat_id = c["id"]
+                        st.session_state.topic = c["topic"]
+                        break
 
     # ③ 一番下：アカウントボタン
     if st.button("アカウント", use_container_width=True):
