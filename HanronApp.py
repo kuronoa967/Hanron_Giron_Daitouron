@@ -357,7 +357,7 @@ with st.sidebar:
             unsafe_allow_html=True
         )
     else:
-        if len(st.session_state.chats) =< 0:
+        if len(st.session_state.chats) <= 0:
             st.markdown(
                 """
                 <div style="
