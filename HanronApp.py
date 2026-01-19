@@ -367,13 +367,11 @@ with st.sidebar:
             if chat_titles:
                 # ------- DataFrame に変換 -------
                 df = pd.DataFrame(st.session_state.chats)
-                if "topic" in df.columns:
-                    df = df.drop(columns=["topic"])
-                    
                 gb = GridOptionsBuilder.from_dataframe(df)
                 gb.configure_selection('single', use_checkbox=False)
                 gb.configure_column("id", header_name="ID", hide=True)
                 gb.configure_column("title", header_name="タイトル", width=200)
+                gb.configure_column("topic", header_name="トピック", hide=True)
                 grid_options = gb.build()
             
                 grid_response = AgGrid(
