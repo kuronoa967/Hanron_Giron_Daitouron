@@ -1,11 +1,9 @@
 import streamlit as st
-# from streamlit_option_menu import option_menu
+from streamlit_option_menu import option_menu
 import requests
 import firebase_admin
 from firebase_admin import credentials, firestore
 from huggingface_hub import InferenceClient
-from st_aggrid import AgGrid, GridOptionsBuilder
-import pandas as pd
 
 st.markdown(
     """
@@ -337,8 +335,6 @@ with st.sidebar:
     if st.button("新規チャット", use_container_width=True):
         st.session_state.current_chat_id = None
         st.session_state.messages = []
-        st.session_state.force_select_index = len(st.session_state.chats)
-        st.session_state.page = "chat"
         st.session_state.new_chat = True
         st.session_state.topic = None
         st.rerun()
@@ -361,15 +357,7 @@ with st.sidebar:
             unsafe_allow_html=True
         )
     else:
-        chat_titles = []
-        for chat in st.session_state.chats:
-            chat_titles.append(chat["title"])
-            
-
-        manual_select = None
-        if st.session_state.force_select_index is not None and st.session_state.force_select_index < len(chat_titles):
-            manual_select = st.session_state.force_select_index
-        if not chat_titles:
+        if if len(st.session_state.chats) == 0:
             st.markdown(
                 """
                 <div style="
@@ -385,45 +373,26 @@ with st.sidebar:
                 unsafe_allow_html=True
             )
         else:
-            if chat_titles:
-                # ------- DataFrame に変換 -------
-                df = pd.DataFrame(st.session_state.chats)
-            
-                gb = GridOptionsBuilder.from_dataframe(df)
-                gb.configure_selection('single', use_checkbox=False)
-                gb.configure_column("id", header_name="ID", hide=True)
-                gb.configure_column("title", header_name="タイトル", width=200)
-                grid_options = gb.build()
-            
-                grid_response = AgGrid(
-                    df,
-                    gridOptions=grid_options,
-                    height=400,
-                    fit_columns_on_grid_load=True
-                )
-            
-                # ------- 選択されたらチャットIDを取得 -------
-                selected = grid_response["selected_rows"]
-                if selected:
-                    chat_id = selected[0]["id"]
-            
-                    if st.session_state.current_chat_id != chat_id:
-                        st.session_state.current_chat_id = chat_id
-                        st.session_state.topic = selected[0]["topic"]
-                        st.session_state.new_chat = False
-                        st.session_state.page = "chat"
-                        st.rerun()
-            
-            else:
-                st.write("まだチャットはありません")
+            chat_titles = [c["title"] for c in st.session_state.chats]
 
+            selected_title = Navbar(
+                pages=chat_titles,
+                options={t: t for t in chat_titles},  # タイトルがキーになる
+                key="chat_nav",
+                style={"overflow-y": "auto", "height": "400px"}
+            )
 
-        if st.session_state.force_select_index is not None:
-            st.session_state.force_select_index = None
+            # --- 選択されたチャットのIDをセット ---
+            for c in st.session_state.chats:
+                if c["title"] == selected_title:
+                    st.session_state.current_chat_id = c["id"]
+                    st.session_state.topic = c["topic"]
+                    break
 
     # ③ 一番下：アカウントボタン
     if st.button("アカウント", use_container_width=True):
         st.session_state.page = "account"
+        st.rerun()
 
 if st.session_state.page == "chat":
     show_chat_page()
