@@ -1,5 +1,4 @@
 import streamlit as st
-# from streamlit_option_menu import option_menu
 import requests
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -51,9 +50,6 @@ if "new_chat" not in st.session_state:
 
 if "current_chat_id" not in st.session_state:
     st.session_state.current_chat_id = None
-
-if "last_chat_id" not in st.session_state:
-    st.session_state.last_chat_id = None
 
 if "force_select_index" not in st.session_state:
     st.session_state.force_select_index = None
