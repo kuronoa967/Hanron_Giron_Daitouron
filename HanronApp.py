@@ -126,7 +126,7 @@ def load_messages(uid, chat_id):
 
 def generate_AI_message(prompt, uid=None, chat_id=None):
     messages = []
-    system_prompt = f"あなたは論理的な議論AIです。ユーザーの主張に対して、事実や根拠をもとに短い文章で反論してください。議論は次のテーマに限定してください：{st.session_state['topic']}"
+    system_prompt = f"あなたは論理的な議論者です。ユーザーの主張に対して、事実と根拠をもとに短い文章で反論してください。議論は次のテーマに限定してください：{st.session_state['topic']}。それ以外の話題を入力された場合は"
     messages.append({"role": "system", "content": system_prompt})
     if uid is not None and chat_id is not None:
         past_messages = load_messages(uid, chat_id)
@@ -385,11 +385,13 @@ with st.sidebar:
                 if selected is not None and len(selected) > 0:
                     row = selected.iloc[0]
                     chat_id = row["id"]
-            
+
+                    if st.session_state.new_chat:
+                        st.session_state.new_chat = False
+                        
                     if st.session_state.current_chat_id != chat_id:
                         st.session_state.current_chat_id = chat_id
                         st.session_state.topic = row["topic"]
-                        st.session_state.new_chat = False
                         st.session_state.page = "chat"
                         st.rerun()
             
