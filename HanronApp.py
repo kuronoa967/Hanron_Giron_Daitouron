@@ -378,20 +378,20 @@ with st.sidebar:
                     gridOptions=grid_options,
                     height=400,
                     fit_columns_on_grid_load=True
+                    key=st.session_state.current_chat_id
                 )
             
                 # ------- 選択されたらチャットIDを取得 -------
                 selected = grid_response["selected_rows"]
+                
                 if selected is not None and len(selected) > 0:
                     row = selected.iloc[0]
                     chat_id = row["id"]
 
-                    if st.session_state.new_chat:
-                        st.session_state.new_chat = False
-                        
                     if st.session_state.current_chat_id != chat_id:
                         st.session_state.current_chat_id = chat_id
                         st.session_state.topic = row["topic"]
+                        st.session_state.new_chat = False
                         st.session_state.page = "chat"
                         st.rerun()
             
