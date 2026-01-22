@@ -325,7 +325,7 @@ with st.sidebar:
         st.markdown(
             """
             <div style="
-                padding: 140% 1rem;
+                padding: 80rem 1rem;
                 color: #888;
                 font-size: 0.9rem;
                 text-align: center;
@@ -349,7 +349,7 @@ with st.sidebar:
             st.markdown(
                 """
                 <div style="
-                    padding: 140% 1rem;
+                    padding: 80rem 1rem;
                     color: #888;
                     font-size: 0.9rem;
                     text-align: center;
