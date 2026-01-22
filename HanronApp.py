@@ -377,7 +377,7 @@ with st.sidebar:
                     df,
                     gridOptions=grid_options,
                     height=400,
-                    fit_columns_on_grid_load=True
+                    fit_columns_on_grid_load=True,
                     key=st.session_state.current_chat_id
                 )
             
