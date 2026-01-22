@@ -368,7 +368,7 @@ with st.sidebar:
                 gb = GridOptionsBuilder.from_dataframe(df)
 
                 selected_rows = []
-                if se.session_state.current_chat_id is not None:
+                if st.session_state.current_chat_id is not None:
                     selected_rows = df.index[df["id"] == [st.session_state.current_chat_id][0]]
                 gb.configure_selection('single', use_checkbox=False, pre_selected_rows=selected_rows)
                 gb.configure_column("id", header_name="ID", hide=True)
