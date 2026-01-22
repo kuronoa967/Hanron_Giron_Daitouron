@@ -366,7 +366,11 @@ with st.sidebar:
                 df = pd.DataFrame(st.session_state.chats)
                 df = df.sort_values("createdAt", ascending=False)
                 gb = GridOptionsBuilder.from_dataframe(df)
-                gb.configure_selection('single', use_checkbox=False)
+
+                selected_rows = []
+                if se.session_state.current_chat_id is not None:
+                    selected_rows = df.index[df["id"] == [st.session_state.current_chat_id][0]]
+                gb.configure_selection('single', use_checkbox=False, pre_selected_rows=selected_rows)
                 gb.configure_column("id", header_name="ID", hide=True)
                 gb.configure_column("title", header_name="タイトル", width=200)
                 gb.configure_column("topic", header_name="トピック", hide=True)
