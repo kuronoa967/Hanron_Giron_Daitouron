@@ -320,7 +320,7 @@ with st.sidebar:
         st.session_state.page = "chat"
         st.session_state.new_chat = True
         st.session_state.topic = None
-        if st.session_state.grid_key == "geid_key_1":
+        if st.session_state.grid_key == "grid_key_1":
             st.session_state.grid_key = "grid_key_2"
         else:
             st.session_state.grid_key = "grid_key_1"
