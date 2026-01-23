@@ -368,7 +368,6 @@ with st.sidebar:
                 gb = GridOptionsBuilder.from_dataframe(df)
 
                 selected_rows = []
-                aggrid_key = "new_chat"
                 if st.session_state.current_chat_id is not None:
                     for i, row in df.iterrows():
                         if row["id"] == st.session_state.current_chat_id:
@@ -388,7 +387,7 @@ with st.sidebar:
                     gridOptions=grid_options,
                     height=400,
                     fit_columns_on_grid_load=True,
-                    key=aggrid_key
+                    key="aggrid_key"
                 )
             
                 # ------- 選択されたらチャットIDを取得 -------
