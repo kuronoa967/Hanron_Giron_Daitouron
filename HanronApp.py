@@ -58,7 +58,7 @@ if "topic" not in st.session_state:
     st.session_state.topic = None
 
 if "grid_key" not in st.session_state:
-    st.session_state.grid_key = None
+    st.session_state.grid_key = "grid_key_1"
 
 def load_chats(uid):
     chats_ref = db.collection("users").document(uid).collection("chats")
@@ -320,7 +320,10 @@ with st.sidebar:
         st.session_state.page = "chat"
         st.session_state.new_chat = True
         st.session_state.topic = None
-        st.session_state.grid_key = "grid_new_chat"
+        if st.session_state.grid_key == "geid_key_1:
+            st.session_state.grid_key = "grid_key_2"
+        else:
+            st.session_state.grid_key = "grid_key_1"
         st.rerun()
     
     # ② 真ん中：チャット一覧
@@ -370,13 +373,10 @@ with st.sidebar:
                 selected_rows = []
                 if st.session_state.force_select_index is not None and st.session_state.force_select_index:
                     selected_rows = [df.index[0]]
-                    st.session_state.grid_key = "grid_current_chat"
-                    st.write(st.session_state.grid_key)
                 elif st.session_state.current_chat_id is not None:
                     for i, row in df.iterrows():
                         if row["id"] == st.session_state.current_chat_id:
                             selected_rows = [i]
-                            st.session_state.grid_key = "grid_current_chat"
                             break
                 gb.configure_selection('single', use_checkbox=False, pre_selected_rows=selected_rows)
                 
