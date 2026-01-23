@@ -298,8 +298,7 @@ def show_auth_error(data):
 
         error_map = {
             "EMAIL_EXISTS": "このメールアドレスは既に登録されています",
-            "INVALID_PASSWORD": "メールアドレスまたはパスワードが間違っています",
-            "EMAIL_NOT_FOUND": "メールアドレスまたはパスワードが間違っています",
+            "INVALID_LOGIN_CREDENTIALS": "メールアドレスまたはパスワードが間違っています",
             "WEAK_PASSWORD : Password should be at least 6 characters":
                 "パスワードは6文字以上で入力してください",
             "INVALID_EMAIL": "メールアドレスの形式が正しくありません"
