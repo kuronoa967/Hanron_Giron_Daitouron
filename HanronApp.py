@@ -368,12 +368,15 @@ with st.sidebar:
                 gb = GridOptionsBuilder.from_dataframe(df)
 
                 selected_rows = []
+                aggrid_key = "new_chat"
                 if st.session_state.current_chat_id is not None:
                     for i, row in df.iterrows():
                         if row["id"] == st.session_state.current_chat_id:
                             selected_rows = [i]
+                            aggrid_key = "current_chat"
                             break
                 gb.configure_selection('single', use_checkbox=False, pre_selected_rows=selected_rows)
+                
                 gb.configure_column("id", header_name="ID", hide=True)
                 gb.configure_column("title", header_name="タイトル", width=200)
                 gb.configure_column("topic", header_name="トピック", hide=True)
@@ -385,7 +388,7 @@ with st.sidebar:
                     gridOptions=grid_options,
                     height=400,
                     fit_columns_on_grid_load=True,
-                    key="chat_list"
+                    key=aggrid_key
                 )
             
                 # ------- 選択されたらチャットIDを取得 -------
