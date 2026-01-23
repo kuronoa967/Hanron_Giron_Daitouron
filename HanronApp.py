@@ -378,6 +378,9 @@ with st.sidebar:
                             selected_rows = [i]
                             st.session_state.grid_key = "grid_current_chat"
                             break
+                if st.session_state.new_chat:
+                    selected_rows = df.index[0]
+                    st.session_state.grid_key = "grid_current_chat"
                 gb.configure_selection('single', use_checkbox=False, pre_selected_rows=selected_rows)
                 
                 gb.configure_column("id", header_name="ID", hide=True)
