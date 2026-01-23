@@ -366,8 +366,7 @@ with st.sidebar:
         else:
             if chat_titles:
                 # ------- DataFrame に変換 -------
-                df = pd.DataFrame(st.session_state.chats)
-                df = df.sort_values("createdAt", ascending=False).reset_index(drop=True)
+                df = pd.DataFrame(st.session_state.chats).reset_index(drop=True)
                 gb = GridOptionsBuilder.from_dataframe(df)
 
                 selected_rows = []
