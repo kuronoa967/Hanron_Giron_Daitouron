@@ -207,8 +207,9 @@ def show_account_page():
                     "returnSecureToken": True
                 }
 
-                r = requests.post(url, json=payload)
-                data = r.json()
+                with st.spinner("認証中..."):
+                    r = requests.post(url, json=payload)
+                    data = r.json()
 
                 if "localId" in data:
                     uid = data["localId"]
@@ -230,7 +231,7 @@ def show_account_page():
                     st.session_state.page = "chat"
                     st.rerun()
                 else:
-                    st.error(data)
+                    st.error(show_auth_error(data))
 
         # ログイン
         with col2:
@@ -245,8 +246,9 @@ def show_account_page():
                     "returnSecureToken": True
                 }
 
-                r = requests.post(url, json=payload)
-                data = r.json()
+                with st.spinner("認証中..."):
+                    r = requests.post(url, json=payload)
+                    data = r.json()
 
                 if "localId" in data:
                     uid = data["localId"]
@@ -271,7 +273,7 @@ def show_account_page():
                     st.session_state.page = "chat"
                     st.rerun()
                 else:
-                    st.error(data)
+                    st.error(show_auth_error(data))
 
     # -------------------------
     # ログイン済みの場合
@@ -288,6 +290,26 @@ def show_account_page():
             st.session_state.topic = None
             st.success("ログアウトしました")
             st.rerun()
+
+def show_auth_error(data):
+    try:
+        message = data["error"]["message"]
+
+        error_map = {
+            "EMAIL_EXISTS": "このメールアドレスは既に登録されています",
+            "INVALID_PASSWORD": "メールアドレスまたはパスワードが間違っています",
+            "EMAIL_NOT_FOUND": "メールアドレスまたはパスワードが間違っています",
+            "WEAK_PASSWORD : Password should be at least 6 characters":
+                "パスワードは6文字以上で入力してください",
+            "INVALID_EMAIL": "メールアドレスの形式が正しくありません"
+        }
+
+        return error_map.get(
+            message,
+            "ログインに失敗しました"
+        )
+    except Exception:
+        return "予期しないエラーが発生しました"
 
 def show_chat_page():
     if st.session_state.user and st.session_state.current_chat_id:
