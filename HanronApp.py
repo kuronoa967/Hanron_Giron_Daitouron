@@ -373,7 +373,7 @@ with st.sidebar:
                     for i, row in df.iterrows():
                         if row["id"] == st.session_state.current_chat_id:
                             selected_rows = [i]
-                            aggrid_key = "current_chat"
+                            st.write(f"selected_chat:{selected_rows}")
                             break
                 gb.configure_selection('single', use_checkbox=False, pre_selected_rows=selected_rows)
                 
