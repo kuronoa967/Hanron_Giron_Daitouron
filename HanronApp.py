@@ -57,6 +57,9 @@ if "force_select_index" not in st.session_state:
 if "topic" not in st.session_state:
     st.session_state.topic = None
 
+if "grid_key" not in st.session_state:
+    st.session_state.grid_key = None
+
 def load_chats(uid):
     chats_ref = db.collection("users").document(uid).collection("chats")
     docs = chats_ref.order_by("createdAt").stream()
@@ -317,6 +320,7 @@ with st.sidebar:
         st.session_state.page = "chat"
         st.session_state.new_chat = True
         st.session_state.topic = None
+        st.session_state.grid_key = "new_chat"
         st.rerun()
     
     # ② 真ん中：チャット一覧
@@ -372,7 +376,7 @@ with st.sidebar:
                     for i, row in df.iterrows():
                         if row["id"] == st.session_state.current_chat_id:
                             selected_rows = [i]
-                            st.write(f"selected_chat:{selected_rows}")
+                            st.session_state.grid_key = "current_chat"
                             break
                 gb.configure_selection('single', use_checkbox=False, pre_selected_rows=selected_rows)
                 
@@ -387,7 +391,7 @@ with st.sidebar:
                     gridOptions=grid_options,
                     height=400,
                     fit_columns_on_grid_load=True,
-                    key="aggrid_key"
+                    key=st.session_state.grid_key
                 )
             
                 # ------- 選択されたらチャットIDを取得 -------
