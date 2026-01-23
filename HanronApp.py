@@ -291,7 +291,7 @@ def show_chat_page():
             generate_AI_message(prompt, uid=uid, chat_id=new_chat_id)
             
             st.session_state.chats = load_chats(uid)
-            st.session_state.force_select_index = len(st.session_state.chats) - 1
+            st.session_state.force_select_index = True
             st.rerun()
         elif st.session_state.user:
             uid = st.session_state.user["uid"]
@@ -316,7 +316,7 @@ with st.sidebar:
     if st.button("新規チャット", key="btn_new_chat", use_container_width=True):
         st.session_state.current_chat_id = None
         st.session_state.messages = []
-        st.session_state.force_select_index = len(st.session_state.chats)
+        st.session_state.force_select_index = False
         st.session_state.page = "chat"
         st.session_state.new_chat = True
         st.session_state.topic = None
@@ -368,14 +368,15 @@ with st.sidebar:
                 gb = GridOptionsBuilder.from_dataframe(df)
 
                 selected_rows = []
-                if st.session_state.current_chat_id is not None:
+                if st.session_state.force_select_index is not None and st.session_state.force_select_index:
+                    selected_rows = [df.index[0]]
+                    st.session_state.grid_key = "grid_current_chat"
+                elif st.session_state.current_chat_id is not None:
                     for i, row in df.iterrows():
                         if row["id"] == st.session_state.current_chat_id:
                             selected_rows = [i]
                             st.session_state.grid_key = "grid_current_chat"
                             break
-                if st.session_state.force_select_index is not None:
-                    selected_rows = df.index[0]
                 gb.configure_selection('single', use_checkbox=False, pre_selected_rows=selected_rows)
                 
                 gb.configure_column("id", header_name="ID", hide=True)
@@ -400,6 +401,7 @@ with st.sidebar:
                     chat_id = row["id"]
 
                     if st.session_state.current_chat_id != chat_id:
+                        st.session_state.force_select_index = False
                         st.session_state.current_chat_id = chat_id
                         st.session_state.topic = row["topic"]
                         st.session_state.new_chat = False
@@ -408,10 +410,6 @@ with st.sidebar:
             
             else:
                 st.write("まだチャットはありません")
-
-
-        if st.session_state.force_select_index is not None:
-            st.session_state.force_select_index = None
 
     # ③ 一番下：アカウントボタン
     if st.button("アカウント", use_container_width=True):
