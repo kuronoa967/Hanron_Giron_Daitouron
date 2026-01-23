@@ -371,6 +371,7 @@ with st.sidebar:
                 if st.session_state.force_select_index is not None and st.session_state.force_select_index:
                     selected_rows = [df.index[0]]
                     st.session_state.grid_key = "grid_current_chat"
+                    st.write(st.session_state.grid_key)
                 elif st.session_state.current_chat_id is not None:
                     for i, row in df.iterrows():
                         if row["id"] == st.session_state.current_chat_id:
