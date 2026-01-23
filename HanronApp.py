@@ -273,7 +273,6 @@ def show_account_page():
                     st.session_state.page = "chat"
                     st.rerun()
                 else:
-                    st.write("Auth error raw:", data)
                     st.error(show_auth_error(data))
 
     # -------------------------
@@ -301,7 +300,7 @@ def show_auth_error(data):
             "INVALID_LOGIN_CREDENTIALS": "メールアドレスまたはパスワードが間違っています",
             "WEAK_PASSWORD : Password should be at least 6 characters":
                 "パスワードは6文字以上で入力してください",
-            "INVALID_EMAIL": "メールアドレスの形式が正しくありません"
+            "INVALID_EMAIL": "メールアドレスまたはパスワードが間違っています"
         }
 
         return error_map.get(
