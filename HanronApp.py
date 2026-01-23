@@ -345,10 +345,6 @@ with st.sidebar:
         for chat in st.session_state.chats:
             chat_titles.append(chat["title"])
             
-
-        manual_select = None
-        if st.session_state.force_select_index is not None and st.session_state.force_select_index < len(chat_titles):
-            manual_select = st.session_state.force_select_index
         if not chat_titles:
             st.markdown(
                 """
@@ -378,9 +374,8 @@ with st.sidebar:
                             selected_rows = [i]
                             st.session_state.grid_key = "grid_current_chat"
                             break
-                if st.session_state.new_chat:
+                if st.session_state.force_select_index is not None:
                     selected_rows = df.index[0]
-                    st.session_state.grid_key = "grid_current_chat"
                 gb.configure_selection('single', use_checkbox=False, pre_selected_rows=selected_rows)
                 
                 gb.configure_column("id", header_name="ID", hide=True)
