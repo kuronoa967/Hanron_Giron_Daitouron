@@ -364,7 +364,7 @@ with st.sidebar:
             if chat_titles:
                 # ------- DataFrame に変換 -------
                 df = pd.DataFrame(st.session_state.chats)
-                df = df.sort_values("createdAt", ascending=False)
+                df = df.sort_values("createdAt", ascending=False).reset_index(drop=True)
                 gb = GridOptionsBuilder.from_dataframe(df)
 
                 selected_rows = []
@@ -385,7 +385,7 @@ with st.sidebar:
                     gridOptions=grid_options,
                     height=400,
                     fit_columns_on_grid_load=True,
-                    key=st.session_state.current_chat_id
+                    key="chat_list"
                 )
             
                 # ------- 選択されたらチャットIDを取得 -------
