@@ -313,14 +313,14 @@ def show_chat_page():
             st.rerun()
 
 with st.sidebar:
-    if st.button("新規チャット", use_container_width=True):
+    if st.button("新規チャット", key="btn_new_chat", use_container_width=True):
         st.session_state.current_chat_id = None
         st.session_state.messages = []
         st.session_state.force_select_index = len(st.session_state.chats)
         st.session_state.page = "chat"
         st.session_state.new_chat = True
         st.session_state.topic = None
-        st.session_state.grid_key = "new_chat"
+        st.session_state.grid_key = "grid_new_chat"
         st.rerun()
     
     # ② 真ん中：チャット一覧
@@ -376,7 +376,7 @@ with st.sidebar:
                     for i, row in df.iterrows():
                         if row["id"] == st.session_state.current_chat_id:
                             selected_rows = [i]
-                            st.session_state.grid_key = "current_chat"
+                            st.session_state.grid_key = "grid_current_chat"
                             break
                 gb.configure_selection('single', use_checkbox=False, pre_selected_rows=selected_rows)
                 
