@@ -369,7 +369,10 @@ with st.sidebar:
 
                 selected_rows = []
                 if st.session_state.current_chat_id is not None:
-                    selected_rows = df.index[df["id"] == [st.session_state.current_chat_id][0]]
+                    for i, row in df.iterrows():
+                        if row["id"] == st.session_state.current_chat_id:
+                            selected_rows = [i]
+                            break
                 gb.configure_selection('single', use_checkbox=False, pre_selected_rows=selected_rows)
                 gb.configure_column("id", header_name="ID", hide=True)
                 gb.configure_column("title", header_name="タイトル", width=200)
