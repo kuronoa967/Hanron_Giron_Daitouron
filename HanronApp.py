@@ -62,7 +62,7 @@ if "grid_key" not in st.session_state:
 
 def load_chats(uid):
     chats_ref = db.collection("users").document(uid).collection("chats")
-    docs = chats_ref.order_by("createdAt").stream()
+    docs = chats_ref.order_by("createdAt", direction=firestore.Query.DESCENDING).stream()
 
     chats = []
     for doc in docs:
