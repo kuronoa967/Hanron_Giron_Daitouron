@@ -273,6 +273,7 @@ def show_account_page():
                     st.session_state.page = "chat"
                     st.rerun()
                 else:
+                    print("Auth error raw:", data)
                     st.error(show_auth_error(data))
 
     # -------------------------
